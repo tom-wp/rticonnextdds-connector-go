@@ -18,11 +18,12 @@ package rti
 // #include "rticonnextdds-connector.h"
 // #include <stdlib.h>
 import "C"
-import "errors"
-import "unsafe"
-import "encoding/json"
-import "strconv"
-
+import (
+	"encoding/json"
+	"errors"
+	"strconv"
+	"unsafe"
+)
 
 /********
 * Types *
@@ -251,6 +252,17 @@ func (output *Output) Write() error {
 	// The C function does not return errors. In the future, we will check errors when supported in the C layer
 	// CON-24 (for more information)
 	C.RTIDDSConnector_write(unsafe.Pointer(output.connector.native), output.nameCStr, nil)
+	return nil
+}
+
+// Dispose disposes of a previously written DDS data instance
+// The key values of the output instance should be set before calling Dispose
+func (output *Output) Dispose() error {
+	// The C function does not return errors. In the future, we will check errors when supported in the C layer
+	// CON-24 (for more information)
+	paramsCStr := C.CString(`{"action":"dispose"}`)
+	defer C.free(unsafe.Pointer(paramsCStr))
+	C.RTIDDSConnector_write(unsafe.Pointer(output.connector.native), output.nameCStr, paramsCStr)
 	return nil
 }
 
